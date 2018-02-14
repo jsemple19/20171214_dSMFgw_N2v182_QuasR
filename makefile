@@ -38,4 +38,4 @@ cleanall:
 #run fastqc on downloaded sequences
 rawData/%.fastq.gz: fastq/%.fastq.gz
 	mkdir -p rawData
-	gunzip -c $^ | head -n 1000000 > $@ 
+	gunzip -c $^ | head -n 1000000 | gzip > $@ 

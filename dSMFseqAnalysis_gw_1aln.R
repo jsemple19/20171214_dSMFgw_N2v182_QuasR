@@ -66,7 +66,7 @@ seqExp=read.table(paste0(path,'rawData/sampleList.txt'),sep='\t',header=T,string
 #create the QuasR Aln file
 samples=as.data.frame(cbind(FileName1=paste(path,"rawData/",seqExp$FileName1,sep=''),
                             FileName2=paste(path,"rawData/",seqExp$FileName2,sep=''),
-                            SampleName=as.character(seqExp$SampleName)))
+                            SampleName=as.character(seqExp$SampleName)),stringsAsFactors=F)
 
 
 ###########################
@@ -78,13 +78,13 @@ for(i in sl(samples[,1])){
   spID=as.character(samples$SampleName[i])
   #clip the low quality bases #remove adapters
   system(paste(
-    'java -jar ~/Trimmomatic-0.36/trimmomatic-0.36.jar PE ',
+    'java -jar $HOME/Trimmomatic-0.36/trimmomatic-0.36.jar PE ',
     samples$FileName1[i],' ', samples$FileName2[i], ' ',
     './tmp/',samples$SampleName[i],'_forward_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_forward_unpaired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_unpaired.fq.gz ',
-    'ILLUMINACLIP:~/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
+    'ILLUMINACLIP:$HOME/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
     sep='')
   )
 }
