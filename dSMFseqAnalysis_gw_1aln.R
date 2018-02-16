@@ -84,7 +84,7 @@ for(i in sl(samples[,1])){
     './tmp/',samples$SampleName[i],'_forward_unpaired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_unpaired.fq.gz ',
-    'ILLUMINACLIP:$HOME/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
+    'ILLUMINACLIP:$HOME/Trimmomatic-0.36/adapters/TruSeq_2-3_PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
     sep='')
   )
 }
@@ -109,7 +109,7 @@ NOMEproj<-qAlign(sampleFile="QuasR_input.txt",
                  auxiliaryFile="QuasR_auxInput.txt",
                  aligner="Rbowtie",
                  paired="fr",
-                 bisulfite="undir", #for gw
+                 bisulfite="dir", #for gw
                  projectName="dSMF_gw_N2vF2",
                  alignmentsDir=my.alignmentsDir,
                  clObj=cluObj ,
@@ -132,15 +132,39 @@ qQCReport(NOMEproj,paste0('./plots/QC_QualityTrimmed.pdf'),clObj=cluObj)
 NOMEproj
 alnStats<-as.data.frame(alignmentStats(NOMEproj))
 alnStats$perCentMapped<-round(100*alnStats$mapped/(alnStats$mapped+alnStats$unmapped),2)
+alnStats
+#undir
 # seqlength mapped unmapped perCentMapped
-# N2_DE_gwV006:genome 100286401  29650  1243590          2.33
-# N2_DE_gwV007:genome 100286401  18238  1344278          1.34
-# F2_DE_gwV008:genome 100286401  14514   427902          3.28
-# F2_DE_gwV009:genome 100286401  17844  1093928          1.61
-# N2_DE_gwV006:Ecoli   64754917  86200  1157390          6.93
-# N2_DE_gwV007:Ecoli   64754917  96620  1247658          7.19
-# F2_DE_gwV008:Ecoli   64754917  27946   399956          6.53
-# F2_DE_gwV009:Ecoli   64754917  77544  1016384          7.09
+# N2_DE_gwV006:genome 100286401 168284   109322         60.62
+# N2_DE_gwV007:genome 100286401 171744   103214         62.46
+# F2_DE_gwV008:genome 100286401 107482   183262         36.97
+# F2_DE_gwV009:genome 100286401 177240   120514         59.53
+# N2_DE_gwV006:Ecoli   64754917   1036   108286          0.95
+# N2_DE_gwV007:Ecoli   64754917    964   102250          0.93
+# F2_DE_gwV008:Ecoli   64754917   8980   174282          4.90
+# F2_DE_gwV009:Ecoli   64754917   2416   118098          2.00
+
+#dir - doesn't seem to make a difference to mapping...?!
+# seqlength mapped unmapped perCentMapped
+# N2_DE_gwV006:genome 100286401 168282   109324         60.62
+# N2_DE_gwV007:genome 100286401 171740   103218         62.46
+# F2_DE_gwV008:genome 100286401 107460   183284         36.96
+# F2_DE_gwV009:genome 100286401 177250   120504         59.53
+# N2_DE_gwV006:Ecoli   64754917    996   108328          0.91
+# N2_DE_gwV007:Ecoli   64754917    922   102296          0.89
+# F2_DE_gwV008:Ecoli   64754917   9094   174190          4.96
+# F2_DE_gwV009:Ecoli   64754917   2386   118118          1.98
+
+#with new adapter file
+# seqlength mapped unmapped perCentMapped
+# N2_DE_gwV006:genome 100286401 168292   106908         61.15
+# N2_DE_gwV007:genome 100286401 171786   101788         62.79
+# F2_DE_gwV008:genome 100286401 107510   179624         37.44
+# F2_DE_gwV009:genome 100286401 177256   118928         59.85
+# N2_DE_gwV006:Ecoli   64754917   1036   105872          0.97
+# N2_DE_gwV007:Ecoli   64754917    998   100790          0.98
+# F2_DE_gwV008:Ecoli   64754917   9080   170544          5.06
+# F2_DE_gwV009:Ecoli   64754917   2386   116542          2.01
 
 
 alignments1=as.data.frame(alignments(NOMEproj)$genome) #pulls out name of .bam files created

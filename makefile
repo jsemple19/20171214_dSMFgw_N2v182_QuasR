@@ -7,9 +7,7 @@
 ########### VARIABLES #########
 ###############################
 
-#genomefile:= ${HOME}/Documents/MeisterLab/GenomeVer/sequence/c_elegans.PRJNA13758.WS250.genomic.fa
-#trimmomaticDIR := ${HOME}/Trimmomatic-0.36
-#methIndGenomeFiles := $(addsuffix ${genomefile}.bwameth.ct2, .sa .amb .ann .pac .bwt)
+# construct lists of sequence file namess
 bname :=  $(addprefix 180126_SNK268_A_L001_JIB-, 1 2 3 4)
 longbname := $(addsuffix _R1, $(bname)) $(addsuffix _R2, $(bname))
 
@@ -39,3 +37,4 @@ cleanall:
 rawData/%.fastq.gz: fastq/%.fastq.gz
 	mkdir -p rawData
 	gunzip -c $^ | head -n 1000000 | gzip > $@ 
+	
