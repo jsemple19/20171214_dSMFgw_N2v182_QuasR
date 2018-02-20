@@ -1,6 +1,6 @@
 ## mapping with QuasR
 ####### Align bisulfite sequencing of dSMF amplicons to C elegans genome
-# date: 2017-06-28
+# date: 2018-02-20
 # author: Jennnifer Semple
 # Scripts adapted from Drosophila scripts kindly provided by Arnaud Krebs
 #
@@ -15,20 +15,18 @@
 
 
 library(QuasR)
-library("BSgenome.Celegans.UCSC.ce11")
-library("BSgenome.Ecoli.NCBI.20080805")  # auxiliary alignment
 # collect citations for packages used
-packageBib<-toBibtex(c(citation("QuasR"),
-                       citation("BSgenome.Celegans.UCSC.ce11"),
-                       citation("BSgenome.Ecoli.NCBI.20080805")))
+#packageBib<-toBibtex(c(citation("QuasR"),
+#                       citation("BSgenome.Celegans.UCSC.ce11"),
+#                       citation("BSgenome.Ecoli.NCBI.20080805")))
 
-setwd("/Users/semple/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182")
+#setwd("/Users/semple/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182")
 
 source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
 
 # make clusters, needed to run in parallel
-cluObj=makeCluster(3)
+cluObj=makeCluster(4)
 
 #setup directory structure this to desired location of your alignments
 if (!dir.exists("./aln")){
@@ -78,17 +76,18 @@ for(i in sl(samples[,1])){
   spID=as.character(samples$SampleName[i])
   #clip the low quality bases #remove adapters
   system(paste(
-    'java -jar $HOME/Trimmomatic-0.36/trimmomatic-0.36.jar PE ',
+    'trimmomatic PE',
     samples$FileName1[i],' ', samples$FileName2[i], ' ',
     './tmp/',samples$SampleName[i],'_forward_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_forward_unpaired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_unpaired.fq.gz ',
-    'ILLUMINACLIP:$HOME/Trimmomatic-0.36/adapters/TruSeq_2-3_PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
+    'ILLUMINACLIP:$HOME/TruSeq_2-3_PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
     sep='')
   )
 }
 
+#    'java -jar $HOME/Trimmomatic-0.36/trimmomatic-0.36.jar PE ',
 
 AlnInput=as.data.frame(cbind(
   FileName1=paste(tmp,samples$SampleName,'_forward_paired.fq.gz',sep=''),
