@@ -15,12 +15,13 @@
 
 
 library(QuasR)
-# collect citations for packages used
-#packageBib<-toBibtex(c(citation("QuasR"),
-#                       citation("BSgenome.Celegans.UCSC.ce11"),
-#                       citation("BSgenome.Ecoli.NCBI.20080805")))
+## get genome file locations
+genomeEcoli<-"/home/jsemple/archive/publicData/GenomeVer/Ecoli/Ecoli.fasta"
+genomeCelegans<-"/home/jsemple/archive/publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa"
 
-#setwd("/Users/semple/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182")
+args = commandArgs(trailingOnly=TRUE)
+
+setwd(args[1])
 
 source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
@@ -49,10 +50,9 @@ my.alignmentsDir=paste(path,'aln/',sep='')
 tmp=paste(path,'tmp/',sep='')
 
 #create auxiliary file
-export(Ecoli,"./tmp/Ecoli.fasta")
 
 AuxInput=as.data.frame(cbind(
-  FileName=paste(tmp,"Ecoli.fasta",sep=''),
+  FileName=genomeEcoli,
   AuxName="Ecoli"))
 
 write.table(AuxInput,paste0(path,'QuasR_auxInput.txt'),quote=F,row.names=F,sep='\t')
@@ -62,10 +62,9 @@ write.table(AuxInput,paste0(path,'QuasR_auxInput.txt'),quote=F,row.names=F,sep='
 seqExp=read.table(paste0(path,'rawData/sampleList.txt'),sep='\t',header=T,stringsAsFactors=F)
 
 #create the QuasR Aln file
-samples=as.data.frame(cbind(FileName1=paste(path,"rawData/",seqExp$FileName1,sep=''),
-                            FileName2=paste(path,"rawData/",seqExp$FileName2,sep=''),
+samples=as.data.frame(cbind(FileName1=seqExp$FileName1,
+                            FileName2=seqExp$FileName2,
                             SampleName=as.character(seqExp$SampleName)),stringsAsFactors=F)
-
 
 ###########################
 #trim the low quality bases
@@ -76,16 +75,17 @@ for(i in sl(samples[,1])){
   spID=as.character(samples$SampleName[i])
   #clip the low quality bases #remove adapters
   system(paste(
-    'trimmomatic PE',
+    'trimmomatic PE ',
     samples$FileName1[i],' ', samples$FileName2[i], ' ',
     './tmp/',samples$SampleName[i],'_forward_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_forward_unpaired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_reverse_unpaired.fq.gz ',
-    'ILLUMINACLIP:$HOME/TruSeq_2-3_PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
+    'ILLUMINACLIP:${HOME}/TruSeq_2-3_PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36',
     sep='')
   )
 }
+
 
 #    'java -jar $HOME/Trimmomatic-0.36/trimmomatic-0.36.jar PE ',
 
@@ -104,7 +104,7 @@ write.table(AlnInput,paste0(path,'QuasR_input.txt'),quote=F,row.names=F,sep='\t'
 QuasRdef='-k 2 --best --strata'
 
 NOMEproj<-qAlign(sampleFile="QuasR_input.txt",
-                 genome="BSgenome.Celegans.UCSC.ce11",
+                 genome=genomeCelegans,
                  auxiliaryFile="QuasR_auxInput.txt",
                  aligner="Rbowtie",
                  paired="fr",
