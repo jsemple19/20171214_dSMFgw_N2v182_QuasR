@@ -27,7 +27,8 @@ source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
 
 # make clusters, needed to run in parallel
-cluObj=makeCluster(4)
+threadNum=4
+cluObj=makeCluster(threadNum)
 
 #setup directory structure this to desired location of your alignments
 if (!dir.exists("./aln")){
@@ -75,7 +76,7 @@ for(i in sl(samples[,1])){
   spID=as.character(samples$SampleName[i])
   #clip the low quality bases #remove adapters
   system(paste(
-    'trimmomatic PE ',
+    'trimmomatic PE -threads ', threadNum, ' ',
     samples$FileName1[i],' ', samples$FileName2[i], ' ',
     './tmp/',samples$SampleName[i],'_forward_paired.fq.gz ',
     './tmp/',samples$SampleName[i],'_forward_unpaired.fq.gz ',
