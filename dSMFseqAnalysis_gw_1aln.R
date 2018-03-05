@@ -15,13 +15,16 @@
 
 
 library(QuasR)
-## get genome file locations
-genomeEcoli<-"/home/jsemple/archive/publicData/GenomeVer/Ecoli/Ecoli.fasta"
-genomeCelegans<-"/home/jsemple/archive/publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa"
 
 args = commandArgs(trailingOnly=TRUE)
 
 setwd(args[1])
+
+
+## get genome file locations
+genomeEcoli<-paste0(args[1],"/../publicData/GenomeVer/Ecoli/Ecoli.fasta")
+genomeCelegans<-paste0(args[1],"/../publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa")
+
 
 source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
@@ -123,6 +126,11 @@ NOMEproj<-qAlign(sampleFile="QuasR_input.txt",
                  cacheDir = tmp)
 
 
+alignments1=as.data.frame(alignments(NOMEproj)$genome) #pulls out name of .bam files created
+
+unlink(c('QuasR_Aligned.txt'))
+write.table(alignments1,'QuasR_Aligned.txt',quote=F,col.names=T,row.names=F,sep='\t',append=T)
+
 
 #QC of the alignment
 #todayDate<-format(Sys.time(), "%Y%m%d")
@@ -133,43 +141,5 @@ NOMEproj
 alnStats<-as.data.frame(alignmentStats(NOMEproj))
 alnStats$perCentMapped<-round(100*alnStats$mapped/(alnStats$mapped+alnStats$unmapped),2)
 alnStats
-#undir
-# seqlength mapped unmapped perCentMapped
-# N2_DE_gwV006:genome 100286401 168284   109322         60.62
-# N2_DE_gwV007:genome 100286401 171744   103214         62.46
-# F2_DE_gwV008:genome 100286401 107482   183262         36.97
-# F2_DE_gwV009:genome 100286401 177240   120514         59.53
-# N2_DE_gwV006:Ecoli   64754917   1036   108286          0.95
-# N2_DE_gwV007:Ecoli   64754917    964   102250          0.93
-# F2_DE_gwV008:Ecoli   64754917   8980   174282          4.90
-# F2_DE_gwV009:Ecoli   64754917   2416   118098          2.00
-
-#dir - doesn't seem to make a difference to mapping...?!
-# seqlength mapped unmapped perCentMapped
-# N2_DE_gwV006:genome 100286401 168282   109324         60.62
-# N2_DE_gwV007:genome 100286401 171740   103218         62.46
-# F2_DE_gwV008:genome 100286401 107460   183284         36.96
-# F2_DE_gwV009:genome 100286401 177250   120504         59.53
-# N2_DE_gwV006:Ecoli   64754917    996   108328          0.91
-# N2_DE_gwV007:Ecoli   64754917    922   102296          0.89
-# F2_DE_gwV008:Ecoli   64754917   9094   174190          4.96
-# F2_DE_gwV009:Ecoli   64754917   2386   118118          1.98
-
-#with new adapter file
-# seqlength mapped unmapped perCentMapped
-# N2_DE_gwV006:genome 100286401 168292   106908         61.15
-# N2_DE_gwV007:genome 100286401 171786   101788         62.79
-# F2_DE_gwV008:genome 100286401 107510   179624         37.44
-# F2_DE_gwV009:genome 100286401 177256   118928         59.85
-# N2_DE_gwV006:Ecoli   64754917   1036   105872          0.97
-# N2_DE_gwV007:Ecoli   64754917    998   100790          0.98
-# F2_DE_gwV008:Ecoli   64754917   9080   170544          5.06
-# F2_DE_gwV009:Ecoli   64754917   2386   116542          2.01
-
-
-alignments1=as.data.frame(alignments(NOMEproj)$genome) #pulls out name of .bam files created
-
-unlink(c('QuasR_Aligned.txt'))
-write.table(alignments1,'QuasR_Aligned.txt',quote=F,col.names=T,row.names=F,sep='\t',append=T)
 
 
