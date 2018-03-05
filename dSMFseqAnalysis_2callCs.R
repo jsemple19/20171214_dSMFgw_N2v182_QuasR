@@ -9,10 +9,9 @@
 library(QuasR)
 
 ## get genome file locations
-genomeEcoli<-"/home/jsemple/archive/publicData/GenomeVer/Ecoli/Ecoli.fasta"
-genomeCelegans<-"/home/jsemple/archive/publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa"
-
 args = commandArgs(trailingOnly=TRUE)
+genomeEcoli<-paste0(args[1],"/../publicData/GenomeVer/Ecoli/Ecoli.fasta")
+genomeCelegans<-paste0(args[1],"/../publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa")
 
 setwd(args[1])
 
