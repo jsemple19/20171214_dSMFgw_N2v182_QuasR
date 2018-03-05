@@ -6,9 +6,13 @@
 # Scripts adapted from Drosophila scripts kindly provided by Arnaud Krebs
 
 library(QuasR)
+library("BSgenome.Celegans.UCSC.ce11")
+# collect citations for packages used
+packageBib<-toBibtex(c(citation("QuasR"),
+                       citation("BSgenome.Celegans.UCSC.ce11")))
 
-setwd("~/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182_lambda")
-genomeFile<-"/Users/semple/Documents/MeisterLab/GenomeVer/lambda/lambdaPhage.fasta"
+setwd("~/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182")
+
 source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
 
@@ -24,7 +28,7 @@ my.alignmentsDir=paste(path,'aln/',sep='')
 cluObj=makeCluster(3)
 
 NOMEproj=qAlign(sampleFile='./QuasR_Aligned.txt',
-              genome=genomeFile,
+              genome="BSgenome.Celegans.UCSC.ce11",
               paired="fr",
               bisulfite="dir",
               projectName="dSMF_N2",
@@ -44,7 +48,7 @@ if (!dir.exists(paste0(path,"./methylation_calls"))){
 }
 
 ## save as rds for future access
-saveRDS(meth_gr,paste0(path,'methylation_calls/NOMEamplicon.rds'))
+saveRDS(meth_gr,paste0(path,'/methylation_calls/NOMEamplicon_',samples,'.rds'))
 
 # and make some histograms
 pdf("./plots/hist_C_coverage.pdf",width=8,height=11,paper="a4")
@@ -59,10 +63,10 @@ for (s in samples) {
 }
 dev.off()
 
-lambdaPhage<-readDNAStringSet(genomeFile)
+
 # find sequence context of Cs using function from callAllCs.r file
 cO=10 # minimal read coverage for a C (low coverage discarded)
-methFreq_grl=call_context_methylation_DS(meth_gr,cO,genome=lambdaPhage)
+methFreq_grl=call_context_methylation(meth_gr,cO,genome=Celegans)
 
 # call_context_methylation returns list of two matrices, "CG" and "GC" in which
 # V1 column with fraction methylation and type column with C context
@@ -77,13 +81,6 @@ for (s in samples){
 }
 dev.off()
 
-# bisulfite conversion frequency
-1-colMeans(as.matrix(mcols(methFreq_grl[["CG"]])[1:4]),na.rm=T)
-#F2_DE_gwV008_M F2_DE_gwV009_M N2_DE_gwV006_M N2_DE_gwV007_M
-#0.9918945      0.9920109      0.9899505      0.9917999
-1-colMeans(as.matrix(mcols(methFreq_grl[["GC"]])[1:4]),na.rm=T)
-#F2_DE_gwV008_M F2_DE_gwV009_M N2_DE_gwV006_M N2_DE_gwV007_M
-#0.9910472      0.9911914      0.9889959      0.9911290
 #saveRDS(methFreq_grl,paste0(path,"/methylation_calls/NOMEamplicon_allSites.rds"))
 
 # #######################################
