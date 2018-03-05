@@ -32,7 +32,7 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor) {
                    symbols = c("***", "**", "*", ".", " "))
 
      text(0.5, 0.5, txt, cex=0.6*cex)
-    # text(.8, .8, Signif, cex=cex, col=2) 
+    # text(.8, .8, Signif, cex=cex, col=2)
 }
 
 jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan","#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
@@ -41,8 +41,8 @@ jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan"
 
 colgradPlot <- function(x, y, cor=FALSE, drawLegend=FALSE, colramp=colorRampPalette(c("darkblue", "lightblue","yellow"), space="Lab"), transformation = function(x) x^0.25, nbin=128, bandwidth, add=FALSE, ...)
 	{
-  
-  colorVector <- MydensCols(cbind(x,y), colramp=colramp, transformation=transformation, 
+
+  colorVector <- MydensCols(cbind(x,y), colramp=colramp, transformation=transformation,
 nbin=nbin, bandwidth=bandwidth)
 
   if(add==FALSE){
@@ -56,9 +56,9 @@ nbin=nbin, bandwidth=bandwidth)
     legend(x="topleft", bty="n", legend=sprintf("R=%.3f", cor(x, y)))
     drawLegend <- match.arg(drawLegend)
   }
-  
+
   xy.range<- par("usr")
-  
+
   if (drawLegend) {
     color.legend(xl=xy.range[2]/2
                  ,xr=xy.range[2]/1.5
@@ -114,18 +114,18 @@ bisConv=function(in.seq){
     )
   }
 #concerts all Cto T in a non CG or GCcontext
-  
+
 bisConvGC=function(in.seq){
   C.pos=vmatchPattern('C', in.seq)
   CG.pos=vmatchPattern('CG', in.seq)
   GC.pos=vmatchPattern('GC', in.seq)
-  
+
   do.call(c,
     lapply(seq(length(in.seq)),function(i){
       Cind=start(C.pos[[i]])
       CGind=start(CG.pos[[i]])
       GCind=start(GC.pos[[i]])
-      convind1=!Cind %in% CGind  
+      convind1=!Cind %in% CGind
       convind2=! Cind %in% (GCind+1)
       convind= Cind[convind1 & convind2]
       DNAStringSet(replaceLetterAt(in.seq[[i]], convind, rep('T',length(convind))))
@@ -170,14 +170,14 @@ bamTOgrMNase=function(IN){
   	fwo=INbam[[1]]$strand[fwi][matched]=='+'
   	rvo=INbam[[1]]$strand[fwi][matched]=='-'
 # 	grf=GRanges(seqnames=INbam[[1]]$rname[fwi][matched][fwo], ranges=IRanges(INbam[[1]]$pos[fwi][matched][fwo],(INbam[[1]]$pos[fwi][matched][fwo]+INbam[[1]]$qwidth[fwi][matched][fwo])), strand=INbam[[1]]$strand[fwi][matched][fwo])
-  grf=GRanges(seqnames=INbam[[1]]$rname[fwi][matched][fwo], 
+  grf=GRanges(seqnames=INbam[[1]]$rname[fwi][matched][fwo],
   	ranges=IRanges(INbam[[1]]$pos[fwi][matched][fwo],
-  	(INbam[[1]]$pos[fwi+1][matched][fwo]+INbam[[1]]$qwidth[fwi+1][matched][fwo])), 
+  	(INbam[[1]]$pos[fwi+1][matched][fwo]+INbam[[1]]$qwidth[fwi+1][matched][fwo])),
   	strand=INbam[[1]]$strand[fwi][matched][fwo])
- 
-   grrv=GRanges(seqnames=INbam[[1]]$rname[fwi][matched][rvo], 
+
+   grrv=GRanges(seqnames=INbam[[1]]$rname[fwi][matched][rvo],
    	ranges=IRanges(INbam[[1]]$pos[fwi+1][matched][rvo],
- 	(INbam[[1]]$pos[fwi][matched][rvo]+INbam[[1]]$qwidth[fwi][matched][rvo])), 
+ 	(INbam[[1]]$pos[fwi][matched][rvo]+INbam[[1]]$qwidth[fwi][matched][rvo])),
   	strand=INbam[[1]]$strand[fwi][matched][rvo])
   	gr=c( grf,grrv)
   	gr
@@ -232,7 +232,7 @@ tileCounts=function(regions,reads,wind,st){
    nbg=((bgr+pc)/(Tbg/1e6))
    nfg/nbg
     }
-require(AmpliconBiSeq)
+#require(AmpliconBiSeq)
 require(QuasR)
 require(data.table)
 #' get C methylation matrix for a given amplicon
@@ -265,7 +265,7 @@ getCMethMatrix<-function(proj,range,samp){
    CpGm=CpGm[,start(range) <= as.numeric(colnames(CpGm)) & end(range) >= as.numeric(colnames(CpGm)) ]
    return(CpGm)
 }
- 
+
 #' Get GC matrix from the C matrix
 #'
 #' function filters the matrix based on conversion rate and gets the matrix for GC
@@ -282,6 +282,11 @@ getGCMatrix<-function(matC=matC.list[[1]],chr="chrI",genome=Celegans,conv.rate=8
 ,destrand=TRUE){
    Cpos=as.numeric(colnames(matC))
    rGR=GRanges(rep(chr,length(Cpos)),IRanges(Cpos,Cpos))
+   # if (class(genome)=="character") {
+   #   rSeq=read.DNAStringSet(genome)
+   # } else {
+   #   rSeq=getSeq(genome,resize(rGR,3,fix='center'))
+   # }
    rSeq=getSeq(genome,resize(rGR,3,fix='center'))
    GCpos=vcountPattern('GC',rSeq)
    CGpos=vcountPattern('CG',rSeq)
@@ -300,7 +305,7 @@ getGCMatrix<-function(matC=matC.list[[1]],chr="chrI",genome=Celegans,conv.rate=8
    # will help determine the strands
    bps=as.character(getSeq(genome,rGR))[GCi]
    if(destrand){
-      
+
       # column names that are for plus and minus strand
       colMinus=(colnames(matGC))[bps=="G"]
       colPlus= (colnames(matGC))[bps=="C"]
@@ -353,7 +358,7 @@ grToIgv<-function(gr,dataset,fileName){
   	End=end(grf),
   	Feature=c(rep(dataset, length(grf))),
   	R1=scores[!NAi])
-	
+
 	write.table(df, file=paste(fileName,'.igv',sep=''), quote=F, sep="\t", row.names=F, col.names=T)
 
 # 	system(paste('sort -k1,1 -k2,2n ',fileName,'.igv ', '> ',fileName,'S.igv',sep=''))
@@ -364,7 +369,7 @@ grToIgv<-function(gr,dataset,fileName){
 
 
 jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan","#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
- 
+
 panel.jet <- function(...) {
   smoothScatter(..., nrpoints=0, add=TRUE, colramp=jet.colors) }
 
