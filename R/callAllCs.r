@@ -338,7 +338,6 @@ call_context_methylation=function(meth_gr,cO,genome=Celegans){
   umet=list(CG.met,GC.met)
   names(umet)=c('CG','GC')
   return(umet)
-
 }
 
 
