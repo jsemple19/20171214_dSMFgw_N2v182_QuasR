@@ -15,7 +15,7 @@
 
 #module add UHTS/Quality_control/fastqc/0.11.5      #fastqc
 #module add UHTS/Quality_control/cutadapt/1.13     #cutadapt
-module add UHTS/Analysis/trimmomatic/0.36; 	#trimmomatic
+#module add UHTS/Analysis/trimmomatic/0.36; 	#trimmomatic
 #module add UHTS/Aligner/bwa/0.7.15                 #bwa
 #need to install bwa-meth in home directory
 #module add UHTS/Analysis/samtools/1.4             #samtools
@@ -28,9 +28,7 @@ runDir=/scratch/cluster/monthly/jsemple/20171214_dSMFgw_N2v182_QuasR
 scriptDir=/home/jsemple/20171214_dSMFgw_N2v182_QuasR
 dataDir=/home/jsemple/archive/20171214_dSMFgw_N2v182
 #go to the scratch directory and copy script from home directory and run from there
-mkdir -p ${runDir}
 cp -r ${scriptDir}/* ${runDir}/
 cd ${runDir}
-cp -r ${dataDir}/* ${runDir}/rawData/
 
 Rscript dSMFseqAnalysis_2callCs.R ${runDir} 

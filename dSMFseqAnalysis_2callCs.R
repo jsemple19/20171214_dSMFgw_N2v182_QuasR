@@ -10,10 +10,11 @@ library(QuasR)
 
 ## get genome file locations
 args = commandArgs(trailingOnly=TRUE)
-genomeEcoli<-paste0(args[1],"/../publicData/GenomeVer/Ecoli/Ecoli.fasta")
-genomeCelegans<-paste0(args[1],"/../publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa")
-
+#args<-c("/scratch/cluster/monthly/jsemple/20171214_dSMFgw_N2v182_QuasR")
 setwd(args[1])
+genomeEcoli<-"./../publicData/GenomeVer/Ecoli/Ecoli.fasta"
+genomeCelegans<-"./../publicData/GenomeVer/WS250/c_elegans.PRJNA13758.WS250.genomic.fa"
+
 
 source('./R/callAllCs.r') #to call all Cs
 source('./R/useful_functionsV1.r') #load the ranges
@@ -21,8 +22,8 @@ source('./R/useful_functionsV1.r') #load the ranges
 
 #####    reload project using list of bam files
 
-path='./'
-my.alignmentsDir=paste(path,'aln/',sep='')
+path='.'
+my.alignmentsDir=paste(path,'/aln/',sep='')
 
 #sp.list=read.delim( "./QuasR_Aligned.txt",sep='\t')  # delete? redundantly creares another file??
 #write.table(sp.list,'./tmp/sample_BAM.tmp',sep='\t',row.names=FALSE)
@@ -45,12 +46,13 @@ meth_gr=qMeth(NOMEproj, mode='allC',clObj=cluObj)
 # 35541247
 #todayDate<-format(Sys.time(), "%Y%m%d")
 
-if (!dir.exists(paste0(path,"./methylation_calls"))){
-  dir.create(paste0(path,"./methylation_calls"))
+if (!dir.exists(paste0(path,"/methylation_calls"))){
+  dir.create(paste0(path,"/methylation_calls"))
 }
 
 ## save as rds for future access
-saveRDS(meth_gr,paste0(path,'/methylation_calls/NOMEamplicon_',samples,'.rds'))
+saveRDS(meth_gr,paste0(path,'/methylation_calls/NOME_allC.rds'))
+#meth_gr<-readRDS(paste0(path,'/methylation_calls/NOME_allC.rds'))
 
 # and make some histograms
 pdf("./plots/hist_C_coverage.pdf",width=8,height=11,paper="a4")
@@ -68,7 +70,7 @@ dev.off()
 
 # find sequence context of Cs using function from callAllCs.r file
 cO=10 # minimal read coverage for a C (low coverage discarded)
-methFreq_grl=call_context_methylation(meth_gr,cO,genome=Celegans)
+methFreq_grl=call_context_methylation(meth_gr,cO,genome=genomeCelegans)
 
 # call_context_methylation returns list of two matrices, "CG" and "GC" in which
 # V1 column with fraction methylation and type column with C context
@@ -83,7 +85,7 @@ for (s in samples){
 }
 dev.off()
 
-#saveRDS(methFreq_grl,paste0(path,"/methylation_calls/NOMEamplicon_allSites.rds"))
+saveRDS(methFreq_grl,paste0(path,"/methylation_calls/NOME_CG-GC.rds"))
 
 # #######################################
 # #######################################

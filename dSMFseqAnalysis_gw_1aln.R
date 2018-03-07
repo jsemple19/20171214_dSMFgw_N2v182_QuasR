@@ -17,9 +17,8 @@
 library(QuasR)
 
 args = commandArgs(trailingOnly=TRUE)
-
+rgs[1]<-c("/scratch/cluster/monthly/jsemple/20171214_dSMFgw_N2v182_QuasR")
 setwd(args[1])
-
 
 ## get genome file locations
 genomeEcoli<-paste0(args[1],"/../publicData/GenomeVer/Ecoli/Ecoli.fasta")
@@ -49,9 +48,9 @@ if (!dir.exists("./plots")) {
 if (!dir.exists("./bed")) {
   dir.create("./bed")
 }
-path='./'
-my.alignmentsDir=paste(path,'aln/',sep='')
-tmp=paste(path,'tmp/',sep='')
+path='.'
+my.alignmentsDir=paste(path,'/aln/',sep='')
+tmp=paste(path,'/tmp/',sep='')
 
 #create auxiliary file
 
@@ -59,11 +58,11 @@ AuxInput=as.data.frame(cbind(
   FileName=genomeEcoli,
   AuxName="Ecoli"))
 
-write.table(AuxInput,paste0(path,'QuasR_auxInput.txt'),quote=F,row.names=F,sep='\t')
+write.table(AuxInput,paste0(path,'/QuasR_auxInput.txt'),quote=F,row.names=F,sep='\t')
 
 # create sampleList file with ls *.fastq.gz > sampleList.txt  edit file in VI to add columns
 #load the experiments
-seqExp=read.table(paste0(path,'rawData/sampleList.txt'),sep='\t',header=T,stringsAsFactors=F)
+seqExp=read.table(paste0(path,'/rawData/sampleList.txt'),sep='\t',header=T,stringsAsFactors=F)
 
 #create the QuasR Aln file
 samples=as.data.frame(cbind(FileName1=seqExp$FileName1,
@@ -98,7 +97,7 @@ AlnInput=as.data.frame(cbind(
   FileName2=paste(tmp,samples$SampleName,'_reverse_paired.fq.gz',sep=''),
   SampleName=as.character(samples$SampleName)))
 
-write.table(AlnInput,paste0(path,'QuasR_input.txt'),quote=F,row.names=F,sep='\t')
+write.table(AlnInput,paste0(path,'/QuasR_input.txt'),quote=F,row.names=F,sep='\t')
 
 
 

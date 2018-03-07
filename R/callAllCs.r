@@ -206,21 +206,48 @@ getGCMatrix<-function(matC=matC.list[[1]],chr="chr2L",genome=Celegans,conv.rate=
 	list(matGC=matGC,matCG=matCG)
 }
 
-
+miObj2gr<-function(miObj) {
+#function to convert Mindex object (obtained from applying GR on DNAstringset) to genomic ranges
+	allGR<-GRanges()
+	seqlevels(allGR)<-names(miObj)
+	for (n in names(miObj)) {
+		grObj<-GRanges(seqnames=Rle(c(n),length(miObj[[n]])),
+			ranges=miObj[[n]], strand="*")
+		allGR<-append(allGR,grObj)
+	}
+	return(allGR)
+}
 
 
 call_context_methylation=function(meth_gr,cO,genome=Celegans){
   #call_context_methylation returns list of two GRanges objects "CG" and "GC"
   # in each of these , the V1 column contains fraction methylation
   # rather than counts and 'type' column with C context
-
+			if (class(genome)=="BSgenome"){
+				fastaFlag=FALSE
+			} else if (is.character(genome)){
+				genome<-readDNAStringSet(genome)
+				fastaFlag=TRUE
+			} else {
+				print("genome must be BSgenome of path to fasta file")
+			}		
 			genome_CGs <- vmatchPattern("CG",genome)
-			genome_CGs <- genome_CGs[strand(genome_CGs)=="+",]
-			strand(genome_CGs) <- "*"
-
 			genome_GCs <- vmatchPattern("GC",genome)
-			genome_GCs <- genome_GCs[strand(genome_GCs)=="+",]
-			strand(genome_GCs) <- "*"
+
+			if (fastaFlag==FALSE) {
+				#if the genome is a BSgenome object then you have to get rid
+				#of duplicate matches on positive and negative strand
+				genome_CGs <- genome_CGs[strand(genome_CGs)=="+",]
+				strand(genome_CGs) <- "*"
+
+				genome_GCs <- genome_GCs[strand(genome_GCs)=="+",]
+				strand(genome_GCs) <- "*"
+			} else {
+				# if the genome if fasta file, we need to convert Mindex object
+				#  to GRanges object
+				genome_CGs<-miObj2gr(genome_CGs)
+				genome_GCs<-miObj2gr(genome_GCs)
+			}
 
 			sel_CGs <- meth_gr %over% genome_CGs
 			sel_GCs <- meth_gr %over% genome_GCs
@@ -312,8 +339,6 @@ call_context_methylation=function(meth_gr,cO,genome=Celegans){
 			names(umet)=c('CG','GC')
 			return(umet)
 		}
-
-
 
 
 # horizontalHeat function derived from AmpliconBiSeq package
@@ -412,7 +437,9 @@ horizontalHeat<-function(sim.mat,legend.width=1, legend=TRUE,legend.text="simila
 }
 
 
-# converts given matrix mat to selected color palette based on it is intensity
+
+
+
 convertToColors <- function(mat,col.select=colorRampPalette(c("blue", "yellow","red"))(50) ) {
    # Produce 'normalized' version of matrix, with values ranging from 0 to 1
    if(is.matrix(mat)){
