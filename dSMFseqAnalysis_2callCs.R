@@ -50,18 +50,73 @@ if (!dir.exists(paste0(path,"/methylation_calls"))){
 ## save as rds for future access
 saveRDS(meth_gr,paste0(path,'/methylation_calls/NOME_allCs.rds'))
 
+meth_gr<-readRDS(paste0(path,'/fromCluster/methylation_calls/NOME_allC.rds'))
+
+
 # and make some histograms
-pdf("./plots/hist_C_coverage.pdf",width=8,height=11,paper="a4")
+pdf("./fromCluster/plots/hist_C_coverage.pdf",width=8,height=11,paper="a4")
 par(mfrow=c(2,1))
 for (s in samples) {
   columnTotal<-paste0(s,"_T")
   columnMeth<-paste0(s,"_M")
-  hist(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal],breaks=100,xlim=c(1,5000),
+  hist(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal],breaks=10000,xlim=c(1,200),
        main=paste(s, ": total coverage"),xlab="read counts")
-  hist(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth],breaks=100,xlim=c(1,5000),
+  hist(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth],breaks=10000,xlim=c(1,200),
        main=paste(s, ": counts of methylated Cs"),xlab="read counts")
 }
 dev.off()
+
+#table of coverage. Cs0freq is number of cytosines with no coverage. rest of data is based on Cs with coverage
+Ccoverage<-data.frame(sampleNames=samples,Cs0freq=0,meanCoverage=0,medianCoverage=0,stdevCoverage=0,
+                      meanMethCount=0,medianMethCount=0,stdevMethCount=0)
+#excluding 0s
+for (s in samples) {
+  columnTotal<-paste0(s,"_T")
+  columnMeth<-paste0(s,"_M")
+  Ccoverage[Ccoverage$sampleNames==s,"Cs0freq"]<-sum(mcols(meth_gr)[,columnTotal]==0)/length(mcols(meth_gr)[,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"meanCoverage"]<-mean(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"medianCoverage"]<-median(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"stdevCoverage"]<-sd(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"meanMethCount"]<-mean(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+  Ccoverage[Ccoverage$sampleNames==s,"medianMethCount"]<-median(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+  Ccoverage[Ccoverage$sampleNames==s,"stdevMethCount"]<-sd(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+}
+
+# sampleNames    Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
+# 1 N2_DE_gwV006 0.13088379     20.17185              8      81.23431      2.874012               0       32.53755
+# 2 N2_DE_gwV007 0.02866742     21.56688             15      71.41639      3.052619               0       28.69126
+# 3 F2_DE_gwV008 0.04534261     11.95661              8      54.29670      1.884294               0       22.12124
+# 4 F2_DE_gwV009 0.02661173     23.28572             17      78.62135      3.163520               0       30.95672
+
+write.csv(Ccoverage, file="./docs/CytosineCoverage.csv")
+
+
+# not excluding 0s
+Ccoverage<-data.frame(sampleNames=samples,Cs0freq=0,meanCoverage=0,medianCoverage=0,stdevCoverage=0,
+                      meanMethCount=0,medianMethCount=0,stdevMethCount=0)
+
+for (s in samples) {
+  columnTotal<-paste0(s,"_T")
+  columnMeth<-paste0(s,"_M")
+  Ccoverage[Ccoverage$sampleNames==s,"Cs0freq"]<-sum(mcols(meth_gr)[,columnTotal]==0)/length(mcols(meth_gr)[,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"meanCoverage"]<-mean(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"medianCoverage"]<-median(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"stdevCoverage"]<-sd(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnTotal])
+  Ccoverage[Ccoverage$sampleNames==s,"meanMethCount"]<-mean(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+  Ccoverage[Ccoverage$sampleNames==s,"medianMethCount"]<-median(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+  Ccoverage[Ccoverage$sampleNames==s,"stdevMethCount"]<-sd(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
+}
+
+# sampleNames    Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
+# 1 N2_DE_gwV006 0.13088379     20.17185              8      81.23431      2.874012               0       32.53755
+# 2 N2_DE_gwV007 0.02866742     21.56688             15      71.41639      3.052619               0       28.69126
+# 3 F2_DE_gwV008 0.04534261     11.95661              8      54.29670      1.884294               0       22.12124
+# 4 F2_DE_gwV009 0.02661173     23.28572             17      78.62135      3.163520               0       30.95672
+
+write.csv(Ccoverage, file="./docs/CytosineCoverage.csv")
+
+
+
 
 
 # find sequence context of Cs using function from callAllCs.r file

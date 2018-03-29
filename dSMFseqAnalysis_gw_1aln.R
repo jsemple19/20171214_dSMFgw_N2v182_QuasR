@@ -37,6 +37,9 @@ if (!dir.exists("./aln")){
 if (!dir.exists("./tmp")) {  #for trimmomatic quality trimmed reads
   dir.create("./tmp")
 }
+if (!dir.exists("./cutadapt")) {  #for trimmomatic quality trimmed reads
+  dir.create("./cutadapt")
+}
 if (!dir.exists("./rds")) {
   dir.create("./rds")
 }
@@ -66,6 +69,27 @@ seqExp=read.table(paste0(path,'rawData/sampleList.txt'),sep='\t',header=T,string
 #create the QuasR Aln file
 samples=as.data.frame(cbind(FileName1=paste(path,"rawData/",seqExp$FileName1,sep=''),
                             FileName2=paste(path,"rawData/",seqExp$FileName2,sep=''),
+                            SampleName=as.character(seqExp$SampleName)),stringsAsFactors=F)
+
+
+###############################
+# trim adaptors with cutadapt #
+###############################
+file.remove("./cutadapt/cutadapt_log.txt")
+for(i in sl(samples[,1])){
+  #i=1
+  #spID=as.character(samples$SampleName[i])
+  #clip the low quality bases #remove adapters
+  system(paste(
+    './runCutadapt.sh ',
+    samples$FileName1[i], ' ', samples$FileName2[i],
+    sep='')
+  )
+}
+
+#create the QuasR Aln table
+samples=as.data.frame(cbind(FileName1=paste(path,"cutadapt/",seqExp$FileName1,sep=''),
+                            FileName2=paste(path,"cutadapt/",seqExp$FileName2,sep=''),
                             SampleName=as.character(seqExp$SampleName)),stringsAsFactors=F)
 
 
@@ -133,6 +157,21 @@ NOMEproj
 alnStats<-as.data.frame(alignmentStats(NOMEproj))
 alnStats$perCentMapped<-round(100*alnStats$mapped/(alnStats$mapped+alnStats$unmapped),2)
 alnStats
+
+##### with cutadapt and then trimmomatic
+# seqlength mapped unmapped perCentMapped
+# N2_DE_gwV006:genome 100286401 172494   290962         37.22
+# N2_DE_gwV007:genome 100286401 175360   292334         37.49
+# F2_DE_gwV008:genome 100286401 109988   359530         23.43
+# F2_DE_gwV009:genome 100286401 180370   287544         38.55
+# N2_DE_gwV006:Ecoli   64754917   1046   289916          0.36
+# N2_DE_gwV007:Ecoli   64754917    974   291360          0.33
+# F2_DE_gwV008:Ecoli   64754917   9342   350188          2.60
+# F2_DE_gwV009:Ecoli   64754917   2400   285144          0.83
+
+
+#### with trimmomatic only
+
 #undir
 # seqlength mapped unmapped perCentMapped
 # N2_DE_gwV006:genome 100286401 168284   109322         60.62
