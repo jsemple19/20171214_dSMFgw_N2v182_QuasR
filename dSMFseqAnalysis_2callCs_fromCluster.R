@@ -19,14 +19,16 @@ source('./R/useful_functionsV1.r') #load the ranges
 
 #####    reload project using list of bam files
 
-path='.'
+path='./fromCluster'
 my.alignmentsDir=paste(path,'/aln/',sep='')
 
 #sp.list=read.delim( "./QuasR_Aligned.txt",sep='\t')  # delete? redundantly creares another file??
 #write.table(sp.list,'./tmp/sample_BAM.tmp',sep='\t',row.names=FALSE)
 
 #change paths if QuasR_Aligned.txt was created on cluster
-
+aligned<-read.table(paste0(path,'/QuasR_Aligned.txt'),stringsAsFactors=F,header=T)
+aligned$FileName<-gsub("/scratch/cluster/monthly/jsemple/20171214_dSMFgw_N2v182_QuasR","~/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182/fromCluster",aligned$FileName)
+write.table(aligned,paste0(path,"/QuasR_Aligned.txt"),quote=F,col.names=T,row.names=F,sep='\t',append=F)
 
 cluObj=makeCluster(3)
 
@@ -42,7 +44,7 @@ NOMEaln=as.data.frame(alignments(NOMEproj)$genome)
 samples=NOMEaln$SampleName
 
 #### call methylating of Cs in data
-meth_gr=qMeth(NOMEproj, mode='allC',clObj=cluObj)
+#meth_gr=qMeth(NOMEproj, mode='allC',clObj=cluObj)
 # 35541247
 #todayDate<-format(Sys.time(), "%Y%m%d")
 
@@ -54,11 +56,9 @@ if (!dir.exists(paste0(path,"/docs"))){
 }
 
 ## save as rds for future access
-saveRDS(meth_gr,paste0(path,'/methylation_calls/NOME_allCs.rds'))
+#saveRDS(meth_gr,paste0(path,'/methylation_calls/NOME_allCs.rds'))
 
-#path="./fromCluster"
 meth_gr<-readRDS(paste0(path,'/methylation_calls/NOME_allC.rds'))
-
 
 # and make some histograms
 pdf(paste0(path,"/plots/hist_C_coverage.pdf"),width=8,height=11,paper="a4")
@@ -89,13 +89,6 @@ for (s in samples) {
   Ccoverage[Ccoverage$sampleNames==s,"stdevMethCount"]<-sd(mcols(meth_gr)[mcols(meth_gr)[,columnTotal]!=0,columnMeth])
 }
 
-#subsample
-# sampleNames   Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
-# 1 N2_DE_gwV006 0.9370099     1.221470              1      1.327843     0.1745163               0      0.6779739
-# 2 N2_DE_gwV007 0.9338724     1.193282              1      1.046644     0.1699534               0      0.5851036
-# 3 F2_DE_gwV008 0.9574079     1.153828              1      1.095326     0.1812591               0      0.5970627
-# 4 F2_DE_gwV009 0.9300330     1.177335              1      1.061709     0.1600872               0      0.5754427
-
 # sampleNames    Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
 # 1 N2_DE_gwV006 0.13088379     20.17185              8      81.23431      2.874012               0       32.53755
 # 2 N2_DE_gwV007 0.02866742     21.56688             15      71.41639      3.052619               0       28.69126
@@ -121,18 +114,12 @@ for (s in samples) {
   Ccoverage[Ccoverage$sampleNames==s,"stdevMethCount"]<-sd(mcols(meth_gr)[,columnMeth])
 }
 
-#subsample
-# sampleNames   Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
-# 1 N2_DE_gwV006 0.9370099   0.07694058              0     0.4462319   0.010992805               0      0.1753593
-# 2 N2_DE_gwV007 0.9338724   0.07890885              0     0.4004675   0.011238604               0      0.1562762
-# 3 F2_DE_gwV008 0.9574079   0.04914400              0     0.3246352   0.007720213               0      0.1285424
-# 4 F2_DE_gwV009 0.9300330   0.08237454              0     0.4111756   0.011200817               0      0.1575947
 
 # sampleNames    Cs0freq meanCoverage medianCoverage stdevCoverage meanMethCount medianMethCount stdevMethCount
-# 1 N2_DE_gwV006 0.13088379     20.17185              8      81.23431      2.874012               0       32.53755
-# 2 N2_DE_gwV007 0.02866742     21.56688             15      71.41639      3.052619               0       28.69126
-# 3 F2_DE_gwV008 0.04534261     11.95661              8      54.29670      1.884294               0       22.12124
-# 4 F2_DE_gwV009 0.02661173     23.28572             17      78.62135      3.163520               0       30.95672
+# 3 N2_DE_gwV006 0.13088379     17.53168              6      76.03681      2.497851               0       30.34907
+# 4 N2_DE_gwV007 0.02866742     20.94862             14      70.47724      2.965108               0       28.28160
+# 1 F2_DE_gwV008 0.04534261     11.41447              7      53.10974      1.798855               0       21.61746
+# 2 F2_DE_gwV009 0.02661173     22.66605             16      77.65865      3.079333               0       30.54628
 
 write.csv(Ccoverage, file=paste0(path,"/docs/CytosineCoverage.csv"))
 
@@ -140,7 +127,9 @@ write.csv(Ccoverage, file=paste0(path,"/docs/CytosineCoverage.csv"))
 
 # find sequence context of Cs using function from callAllCs.r file
 cO=10 # minimal read coverage for a C (low coverage discarded)
-methFreq_grl=call_context_methylation(meth_gr,cO,genome=Celegans)
+#methFreq_grl=call_context_methylation(meth_gr,cO,genome=Celegans)
+methFreq_grl<-readRDS(paste0(path,"/methylation_calls/NOME_CG-GC.rds"))
+
 
 # call_context_methylation returns list of two matrices, "CG" and "GC" in which
 # V1 column with fraction methylation and type column with C context
@@ -155,7 +144,7 @@ for (s in samples){
 }
 dev.off()
 
-saveRDS(methFreq_grl,paste0(path,"/methylation_calls/NOME_CG-GC.rds"))
+#saveRDS(methFreq_grl,paste0(path,"/methylation_calls/NOME_CG-GC.rds"))
 
 # #######################################
 # #######################################

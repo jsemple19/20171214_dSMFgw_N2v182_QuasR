@@ -16,11 +16,10 @@
 
 library(QuasR)
 library("BSgenome.Celegans.UCSC.ce11")
-library("BSgenome.Ecoli.NCBI.20080805")  # auxiliary alignment
+library("BSgenome.Ecoli.NCBI.20080805")
 # collect citations for packages used
 packageBib<-toBibtex(c(citation("QuasR"),
-                       citation("BSgenome.Celegans.UCSC.ce11"),
-                       citation("BSgenome.Ecoli.NCBI.20080805")))
+                       citation("BSgenome.Celegans.UCSC.ce11")))
 
 setwd("/Users/semple/Documents/MeisterLab/sequencingData/20171214_dSMFgw_N2v182")
 
@@ -31,30 +30,30 @@ source('./R/useful_functionsV1.r') #load the ranges
 cluObj=makeCluster(3)
 
 #setup directory structure this to desired location of your alignments
-if (!dir.exists("./aln")){
-  dir.create("./aln")
+if (!dir.exists(paste0(path,"/aln"))){
+  dir.create(paste0(path,"/aln"))
 }
-if (!dir.exists("./tmp")) {  #for trimmomatic quality trimmed reads
-  dir.create("./tmp")
+if (!dir.exists(paste0(path,"/tmp"))) {  #for trimmomatic quality trimmed reads
+  dir.create(paste0(path,"/tmp"))
 }
-if (!dir.exists("./cutadapt")) {  #for trimmomatic quality trimmed reads
-  dir.create("./cutadapt")
+if (!dir.exists(paste0(path,"/cutadapt"))) {  #for trimmomatic quality trimmed reads
+  dir.create(paste0(path,"/cutadapt"))
 }
-if (!dir.exists("./rds")) {
-  dir.create("./rds")
+if (!dir.exists(paste0(path,"/rds"))) {
+  dir.create(paste0(path,"/rds"))
 }
-if (!dir.exists("./plots")) {
-  dir.create("./plots")
+if (!dir.exists(paste0(path,"/plots"))) {
+  dir.create(paste0(path,"/plots"))
 }
-if (!dir.exists("./bed")) {
-  dir.create("./bed")
+if (!dir.exists(paste0(path,"/bed"))) {
+  dir.create(paste0(path,"/bed"))
 }
-path='./'
-my.alignmentsDir=paste(path,'aln/',sep='')
-tmp=paste(path,'tmp/',sep='')
+path='.'
+my.alignmentsDir=paste(path,'/aln/',sep='')
+tmp=paste(path,'/tmp/',sep='')
 
 #create auxiliary file
-export(Ecoli,"./tmp/Ecoli.fasta")
+export(Ecoli,"/tmp/Ecoli.fasta")
 
 AuxInput=as.data.frame(cbind(
   FileName=paste(tmp,"Ecoli.fasta",sep=''),
@@ -75,21 +74,21 @@ samples=as.data.frame(cbind(FileName1=paste(path,"rawData/",seqExp$FileName1,sep
 ###############################
 # trim adaptors with cutadapt #
 ###############################
-file.remove("./cutadapt/cutadapt_log.txt")
+file.remove(paste0(path,"/cutadapt/cutadapt_log.txt"))
 for(i in sl(samples[,1])){
   #i=1
   #spID=as.character(samples$SampleName[i])
   #clip the low quality bases #remove adapters
   system(paste(
-    './runCutadapt.sh ',
+    path, '/runCutadapt.sh ',
     samples$FileName1[i], ' ', samples$FileName2[i],
     sep='')
   )
 }
 
 #create the QuasR Aln table
-samples=as.data.frame(cbind(FileName1=paste(path,"cutadapt/",seqExp$FileName1,sep=''),
-                            FileName2=paste(path,"cutadapt/",seqExp$FileName2,sep=''),
+samples=as.data.frame(cbind(FileName1=paste(path,"/cutadapt/",seqExp$FileName1,sep=''),
+                            FileName2=paste(path,"/cutadapt/",seqExp$FileName2,sep=''),
                             SampleName=as.character(seqExp$SampleName)),stringsAsFactors=F)
 
 
@@ -150,7 +149,7 @@ NOMEproj<-qAlign(sampleFile="QuasR_input.txt",
 
 #QC of the alignment
 #todayDate<-format(Sys.time(), "%Y%m%d")
-qQCReport(NOMEproj,paste0('./plots/QC_QualityTrimmed.pdf'),clObj=cluObj)
+qQCReport(NOMEproj,paste0(path,'/plots/QC_QualityTrimmed.pdf'),clObj=cluObj)
 
 
 NOMEproj
@@ -209,6 +208,6 @@ alnStats
 alignments1=as.data.frame(alignments(NOMEproj)$genome) #pulls out name of .bam files created
 
 unlink(c('QuasR_Aligned.txt'))
-write.table(alignments1,'QuasR_Aligned.txt',quote=F,col.names=T,row.names=F,sep='\t',append=T)
+write.table(alignments1,paste0(path,'QuasR_Aligned.txt'),quote=F,col.names=T,row.names=F,sep='\t',append=T)
 
 
